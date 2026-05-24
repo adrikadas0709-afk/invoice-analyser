@@ -1,0 +1,153 @@
+{
+  "users": [
+    {
+      "_id": "offline_user_1779619056040",
+      "name": "Adrika",
+      "email": "adrikadas0709@gmail.com",
+      "password": "$2b$10$NDacWNGxKMMFAxAa.oL7eO41iBt2Mn3sYS9B/gnEWQJuk8NtYXp6u",
+      "createdAt": "2026-05-24T10:37:36.040Z",
+      "updatedAt": "2026-05-24T10:37:36.040Z"
+    }
+  ],
+  "invoices": [
+    {
+      "_id": "offline_invoice_1779621540264",
+      "user": "offline_user_1779619056040",
+      "merchant": "Manoj Hardware - Bangalore",
+      "amount": 6130,
+      "currency": "INR",
+      "currencySymbol": "₹",
+      "tax": 1258.8,
+      "date": "01-Oct-23",
+      "category": "Shopping",
+      "items": [
+        {
+          "name": "LSMR*",
+          "quantity": 1,
+          "unitPrice": 4120,
+          "price": 4120,
+          "taxPercent": 0,
+          "total": 4120
+        },
+        {
+          "name": "SAWM",
+          "quantity": 1,
+          "unitPrice": 1000,
+          "price": 1000,
+          "taxPercent": 0,
+          "total": 1000
+        },
+        {
+          "name": "BSB/T",
+          "quantity": 1,
+          "unitPrice": 500,
+          "price": 500,
+          "taxPercent": 0,
+          "total": 500
+        }
+      ],
+      "aiInsight": "This hardware purchase of ₹6,130.00 is a moderate expense for the shopping category. It's advisable to regularly review such essential purchases to ensure cost-effectiveness and necessity.",
+      "fileUrl": "C:\\Users\\user\\OneDrive\\Desktop\\SyntaxSquad-AiInvoiceAnalyzer\\backend\\uploads\\1779621514429-sample_invoice3.jpg",
+      "createdAt": "2026-05-24T11:19:00.264Z",
+      "updatedAt": "2026-05-24T11:19:00.264Z"
+    },
+    {
+      "_id": "offline_invoice_1779619538116",
+      "user": "offline_user_1779619056040",
+      "merchant": "Your Company Inc.",
+      "amount": 472.5,
+      "currency": "USD",
+      "currencySymbol": "$",
+      "tax": 22.5,
+      "date": "10-02-2025",
+      "category": "Other",
+      "items": [
+        {
+          "name": "Furniture assembly (per hour)",
+          "quantity": 2,
+          "unitPrice": 50,
+          "price": 50,
+          "taxPercent": 0,
+          "total": 100
+        },
+        {
+          "name": "Drywall patch & repair",
+          "quantity": 1,
+          "unitPrice": 150,
+          "price": 150,
+          "taxPercent": 0,
+          "total": 150
+        },
+        {
+          "name": "Faucet replacement",
+          "quantity": 1,
+          "unitPrice": 120,
+          "price": 120,
+          "taxPercent": 0,
+          "total": 120
+        },
+        {
+          "name": "Door lock installation",
+          "quantity": 1,
+          "unitPrice": 80,
+          "price": 80,
+          "taxPercent": 0,
+          "total": 80
+        }
+      ],
+      "aiInsight": "This invoice for home services totals $472.50, representing a moderate but often necessary expense. Ensure these essential maintenance costs are factored into your overall household budget for better financial planning.",
+      "fileUrl": "C:\\Users\\user\\OneDrive\\Desktop\\SyntaxSquad-AiInvoiceAnalyzer\\backend\\uploads\\1779619528100-sample_invoice1.png",
+      "createdAt": "2026-05-24T10:45:38.116Z",
+      "updatedAt": "2026-05-24T10:45:38.116Z"
+    },
+    {
+      "_id": "offline_invoice_1779619097860",
+      "user": "offline_user_1779619056040",
+      "merchant": "ABC Company",
+      "amount": 24200,
+      "currency": "INR",
+      "currencySymbol": "₹",
+      "tax": 2200,
+      "date": "12 October, 2022",
+      "category": "Other",
+      "items": [
+        {
+          "name": "Logo Design",
+          "quantity": 5,
+          "unitPrice": 2000,
+          "price": 2000,
+          "taxPercent": 0,
+          "total": 10000
+        },
+        {
+          "name": "Advertising Design",
+          "quantity": 10,
+          "unitPrice": 500,
+          "price": 500,
+          "taxPercent": 0,
+          "total": 5000
+        },
+        {
+          "name": "Poster Design",
+          "quantity": 5,
+          "unitPrice": 1000,
+          "price": 1000,
+          "taxPercent": 0,
+          "total": 5000
+        },
+        {
+          "name": "Brochure Design",
+          "quantity": 1,
+          "unitPrice": 2000,
+          "price": 2000,
+          "taxPercent": 0,
+          "total": 2000
+        }
+      ],
+      "aiInsight": "This invoice reflects a substantial investment in design services for your business. Ensure these creative assets align with your marketing strategy to maximize their value and return.",
+      "fileUrl": "C:\\Users\\user\\OneDrive\\Desktop\\SyntaxSquad-AiInvoiceAnalyzer\\backend\\uploads\\1779619087228-invoice_sample.jpeg",
+      "createdAt": "2026-05-24T10:38:17.860Z",
+      "updatedAt": "2026-05-24T10:38:17.860Z"
+    }
+  ]
+}

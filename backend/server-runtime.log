@@ -1,0 +1,19 @@
+
+> backend@1.0.0 start
+> node server.js
+
+◇ injected env (4) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Server running on port 5000
+[0mGET /api/health [32m200[0m 2.066 ms - 43[0m
+[0mGET /api/health [32m200[0m 0.789 ms - 43[0m
+[0mPOST /api/auth/login [31m500[0m 9.854 ms - 258[0m
+[0mPOST /api/auth/login [31m500[0m 21.359 ms - 258[0m
+[0mPOST /api/auth/login [31m500[0m 16.520 ms - 258[0m
+[0mGET /api/health [32m200[0m 1.227 ms - 43[0m
+[0mPOST /api/auth/register [31m500[0m 32.514 ms - 250[0m
+[0mPOST /api/auth/register [31m500[0m 22.305 ms - 250[0m
+[0mPOST /api/auth/register [31m500[0m 17.736 ms - 250[0m
+[0mPOST /api/auth/register [31m500[0m 29.007 ms - 250[0m
+[0mPOST /api/auth/register [31m500[0m 31.967 ms - 250[0m
+[0mPOST /api/auth/register [31m500[0m 39.077 ms - 250[0m
+[0mPOST /api/auth/register [31m500[0m 54.613 ms - 250[0m
