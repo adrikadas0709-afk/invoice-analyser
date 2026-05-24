@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
 const uploadDir = path.join(__dirname, "..", "uploads");
 
@@ -10,7 +11,7 @@ if (!fs.existsSync(uploadDir)) {
 
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, uploadDir);
+    cb(null, os.tmpdir());
   },
   filename(req, file, cb) {
     cb(null, `${Date.now()}-${file.originalname}`);
