@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ai-invoice-analyzer
+    env: node
+    plan: free
+    # The build command needs to install both backend and frontend dependencies, then build the frontend
+    buildCommand: "cd backend && npm install && cd ../Frontend && npm install && npm run build"
+    # The start command runs the backend server which serves the built frontend
+    startCommand: "cd backend && npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false # Set this securely in the Render Dashboard
+      - key: JWT_SECRET
+        sync: false # Set this securely in the Render Dashboard
+      - key: GEMINI_API_KEY
+        sync: false # Set this securely in the Render Dashboard
+      - key: VITE_API_BASE_URL
+        value: "/api" # Instructs the frontend to use relative paths so it connects to the same server
