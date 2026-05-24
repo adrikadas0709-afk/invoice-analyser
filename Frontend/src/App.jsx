@@ -112,37 +112,60 @@ export default function App() {
     delete: "",
   });
 
-  const [convAmount, setConvAmount] = useState("");
-  const [convFrom, setConvFrom] = useState("USD");
-  const [convTo, setConvTo] = useState("INR");
-  const [convResult, setConvResult] = useState(null);
+  const [dashboardCurrency, setDashboardCurrency] = useState("INR");
+  const [exchangeRates, setExchangeRates] = useState(null);
+
+  useEffect(() => {
+    fetch("https://api.exchangerate-api.com/v4/latest/USD")
+      .then((res) => res.json())
+      .then((data) => setExchangeRates(data.rates))
+      .catch(() => console.error("Failed to load exchange rates"));
+  }, []);
+
+  const convertCurrency = useCallback(
+    (amount, fromCurrency, toCurrency) => {
+      if (!exchangeRates || !fromCurrency || !toCurrency) return amount;
+      const fromRate = exchangeRates[fromCurrency.toUpperCase()] || 1;
+      const toRate = exchangeRates[toCurrency.toUpperCase()] || 1;
+      return (amount / fromRate) * toRate;
+    },
+    [exchangeRates]
+  );
 
   const authHeaders = useMemo(
     () => (user?.token ? { Authorization: `Bearer ${user.token}` } : {}),
     [user]
   );
 
+  const displayCurrency = dashboardCurrency;
+
+  const normalizedInvoices = useMemo(() => {
+    return invoices.map((inv) => ({
+      ...inv,
+      convertedAmount: convertCurrency(Number(inv.amount) || 0, inv.currency || "INR", displayCurrency),
+    }));
+  }, [invoices, convertCurrency, displayCurrency]);
+
   const chartData = useMemo(() => {
     if (summary.length) {
       return summary.map((item) => ({
         name: item._id || "Other",
-        value: Number(item.total) || 0,
+        value: convertCurrency(Number(item.total) || 0, item.currency || "INR", displayCurrency),
         count: item.count || 0,
       }));
     }
 
-    const grouped = invoices.reduce((acc, invoice) => {
+    const grouped = normalizedInvoices.reduce((acc, invoice) => {
       const category = invoice.category || "Other";
-      acc[category] = (acc[category] || 0) + (Number(invoice.amount) || 0);
+      acc[category] = (acc[category] || 0) + invoice.convertedAmount;
       return acc;
     }, {});
 
     return Object.entries(grouped).map(([name, value]) => ({ name, value }));
-  }, [invoices, summary]);
+  }, [normalizedInvoices, summary, convertCurrency, displayCurrency]);
 
-  const displayCurrency = selectedInvoice?.currency || invoices[0]?.currency || "INR";
-  const totalExpense = invoices.reduce((sum, invoice) => sum + (Number(invoice.amount) || 0), 0);
-  const averageExpense = invoices.length ? totalExpense / invoices.length : 0;
+  const totalExpense = normalizedInvoices.reduce((sum, invoice) => sum + invoice.convertedAmount, 0);
+  const averageExpense = normalizedInvoices.length ? totalExpense / normalizedInvoices.length : 0;
   const topCategory = chartData.length
     ? chartData.reduce((top, item) => (item.value > top.value ? item : top), chartData[0])
     : null;
@@ -436,19 +459,6 @@ ${detailedInvoices || "No invoices available."}
     }
   }, [showNotice]);
 
-  const handleConvert = async (e) => {
-    e.preventDefault();
-    if (!convAmount) return;
-    try {
-      const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${convFrom}`);
-      const data = await res.json();
-      const rate = data.rates[convTo];
-      setConvResult((convAmount * rate).toFixed(2));
-    } catch (err) {
-      showNotice("error", "Failed to fetch exchange rates");
-    }
-  };
-
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && user?.token) {
@@ -619,7 +629,19 @@ ${detailedInvoices || "No invoices available."}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <StatusBadge loading={loading.dashboard} />
+            <select
+              value={dashboardCurrency}
+              onChange={(e) => setDashboardCurrency(e.target.value)}
+              className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium outline-none transition focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+            >
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD ($)</option>
+              <option value="AUD">AUD ($)</option>
+            </select>
+            <StatusBadge loading={loading.dashboard || !exchangeRates} />
             <button
               type="button"
               onClick={clearHistory}
@@ -699,7 +721,7 @@ ${detailedInvoices || "No invoices available."}
 
           <aside className="space-y-6">
             <HistoryPanel
-              invoices={invoices}
+              invoices={normalizedInvoices}
               selectedId={selectedInvoice?._id}
               currency={displayCurrency}
               onOpen={openInvoice}
@@ -711,35 +733,6 @@ ${detailedInvoices || "No invoices available."}
               onSubmit={handleChat}
               loading={loading.chat}
             />
-            {/* Currency Converter */}
-            <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-lg font-semibold">Currency Converter</h2>
-              <form onSubmit={handleConvert} className="flex flex-col gap-3">
-                <TextField type="number" label="Amount" value={convAmount} onChange={setConvAmount} step="any" />
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="mb-1.5 block text-sm font-medium text-zinc-700">From</label>
-                    <select value={convFrom} onChange={e => setConvFrom(e.target.value)} className="h-11 w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 outline-none focus:border-cyan-500">
-                      <option>USD</option><option>EUR</option><option>GBP</option><option>INR</option><option>CAD</option><option>AUD</option><option>JPY</option>
-                    </select>
-                  </div>
-                  <div className="flex-1">
-                    <label className="mb-1.5 block text-sm font-medium text-zinc-700">To</label>
-                    <select value={convTo} onChange={e => setConvTo(e.target.value)} className="h-11 w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 outline-none focus:border-cyan-500">
-                      <option>USD</option><option>EUR</option><option>GBP</option><option>INR</option><option>CAD</option><option>AUD</option><option>JPY</option>
-                    </select>
-                  </div>
-                </div>
-                <button type="submit" className="mt-2 flex h-11 w-full items-center justify-center rounded-md bg-cyan-700 font-semibold text-white transition hover:bg-cyan-800">
-                  Convert
-                </button>
-                {convResult && (
-                  <div className="mt-3 rounded-md bg-zinc-100 p-3 text-center text-lg font-semibold text-zinc-800">
-                    {convAmount} {convFrom} = {convResult} {convTo}
-                  </div>
-                )}
-              </form>
-            </section>
           </aside>
         </section>
       </div>
@@ -1101,7 +1094,7 @@ function HistoryPanel({ invoices, selectedId, currency, onOpen }) {
                   <div className="mt-1 text-xs text-zinc-500">{invoice.category || "Other"}</div>
                 </div>
                 <div className="shrink-0 text-sm font-semibold">
-                  {formatCurrency(invoice.amount, invoice.currency || currency)}
+                  {formatCurrency(invoice.convertedAmount ?? invoice.amount, currency)}
                 </div>
               </div>
             </button>
