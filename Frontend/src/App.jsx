@@ -35,7 +35,7 @@ import {
 } from "recharts";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "/api" : "http://localhost:5000/api");
 
 const STORAGE_KEY = "invoiceAnalyzerUser";
 const COLORS = ["#0891b2", "#16a34a", "#d97706", "#dc2626", "#7c3aed", "#0f766e", "#9333ea"];
