@@ -112,6 +112,11 @@ export default function App() {
     delete: "",
   });
 
+  const [convAmount, setConvAmount] = useState("");
+  const [convFrom, setConvFrom] = useState("USD");
+  const [convTo, setConvTo] = useState("INR");
+  const [convResult, setConvResult] = useState(null);
+
   const authHeaders = useMemo(
     () => (user?.token ? { Authorization: `Bearer ${user.token}` } : {}),
     [user]
@@ -326,25 +331,20 @@ export default function App() {
   }
 
   async function deleteInvoice(invoiceId) {
+    if (!window.confirm("Delete this invoice forever?")) return;
     setLoading((current) => ({ ...current, delete: invoiceId }));
-    showNotice("", "");
-
     try {
       const response = await fetch(`${API_BASE_URL}/invoices/${invoiceId}`, {
         method: "DELETE",
         headers: authHeaders,
       });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(getErrorMessage(data, "Unable to delete invoice"));
+      if (!response.ok) throw new Error("Failed to delete");
+      
+      setInvoices((current) => current.filter((inv) => inv._id !== invoiceId));
+      if (selectedInvoice?._id === invoiceId) {
+        setSelectedInvoice(null);
       }
-
-      setInvoices((current) => current.filter((invoice) => invoice._id !== invoiceId));
-      setSelectedInvoice((current) =>
-        current?._id === invoiceId ? invoices.find((invoice) => invoice._id !== invoiceId) || null : current
-      );
-      showNotice("success", data.message || "Invoice deleted.");
+      showNotice("success", "Invoice deleted.");
       loadDashboard();
     } catch (error) {
       showNotice("error", error.message);
@@ -352,6 +352,28 @@ export default function App() {
       setLoading((current) => ({ ...current, delete: "" }));
     }
   }
+
+  const clearHistory = useCallback(async () => {
+    if (!window.confirm("Are you sure you want to permanently delete all your invoices and clear the chat history?")) return;
+    setLoading(current => ({ ...current, delete: "all" }));
+    try {
+      const response = await fetch(`${API_BASE_URL}/invoices/clear`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+      if (!response.ok) throw new Error("Failed to clear history");
+      setInvoices([]);
+      setSummary([]);
+      setSelectedInvoice(null);
+      setChatMessages([{ role: "assistant", text: "Ask about your invoice categories, totals, or spending decisions." }]);
+      showNotice("success", "History completely cleared.");
+    } catch (error) {
+      showNotice("error", error.message);
+    } finally {
+      setLoading(current => ({ ...current, delete: "all" }));
+      setLoading(current => ({ ...current, delete: "" }));
+    }
+  }, [authHeaders, showNotice]);
 
   async function handleChat(event) {
     event.preventDefault();
@@ -413,6 +435,19 @@ ${detailedInvoices || "No invoices available."}
       showNotice("", "");
     }
   }, [showNotice]);
+
+  const handleConvert = async (e) => {
+    e.preventDefault();
+    if (!convAmount) return;
+    try {
+      const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${convFrom}`);
+      const data = await res.json();
+      const rate = data.rates[convTo];
+      setConvResult((convAmount * rate).toFixed(2));
+    } catch (err) {
+      showNotice("error", "Failed to fetch exchange rates");
+    }
+  };
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -587,6 +622,15 @@ ${detailedInvoices || "No invoices available."}
             <StatusBadge loading={loading.dashboard} />
             <button
               type="button"
+              onClick={clearHistory}
+              disabled={loading.delete === "all"}
+              className="flex h-10 items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+            >
+              {loading.delete === "all" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              Clear Data
+            </button>
+            <button
+              type="button"
               onClick={logout}
               className="flex h-10 items-center gap-2 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium transition hover:bg-zinc-50"
             >
@@ -667,6 +711,35 @@ ${detailedInvoices || "No invoices available."}
               onSubmit={handleChat}
               loading={loading.chat}
             />
+            {/* Currency Converter */}
+            <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-lg font-semibold">Currency Converter</h2>
+              <form onSubmit={handleConvert} className="flex flex-col gap-3">
+                <TextField type="number" label="Amount" value={convAmount} onChange={setConvAmount} step="any" />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-700">From</label>
+                    <select value={convFrom} onChange={e => setConvFrom(e.target.value)} className="h-11 w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 outline-none focus:border-cyan-500">
+                      <option>USD</option><option>EUR</option><option>GBP</option><option>INR</option><option>CAD</option><option>AUD</option><option>JPY</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-700">To</label>
+                    <select value={convTo} onChange={e => setConvTo(e.target.value)} className="h-11 w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 outline-none focus:border-cyan-500">
+                      <option>USD</option><option>EUR</option><option>GBP</option><option>INR</option><option>CAD</option><option>AUD</option><option>JPY</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" className="mt-2 flex h-11 w-full items-center justify-center rounded-md bg-cyan-700 font-semibold text-white transition hover:bg-cyan-800">
+                  Convert
+                </button>
+                {convResult && (
+                  <div className="mt-3 rounded-md bg-zinc-100 p-3 text-center text-lg font-semibold text-zinc-800">
+                    {convAmount} {convFrom} = {convResult} {convTo}
+                  </div>
+                )}
+              </form>
+            </section>
           </aside>
         </section>
       </div>
